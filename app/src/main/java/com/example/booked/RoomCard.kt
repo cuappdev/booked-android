@@ -98,7 +98,7 @@ fun RoomCard(roomName: String, libraryName: String, collaborative: Boolean, book
             ) {
                 Icon(
                     painter = painterResource(R.drawable.sofa),
-                    contentDescription = null,
+                    contentDescription = "Individual study",
                     tint = Color.Gray,
                     modifier = Modifier.size(13.dp)
                 )
@@ -119,7 +119,7 @@ fun RoomCard(roomName: String, libraryName: String, collaborative: Boolean, book
             ) {
                 Icon(
                     painter = painterResource(R.drawable.volume),
-                    contentDescription = null,
+                    contentDescription = if (collaborative) "Collaborative" else "Silent",
                     tint = Color.Gray,
                     modifier = Modifier.size(13.dp)
                 )

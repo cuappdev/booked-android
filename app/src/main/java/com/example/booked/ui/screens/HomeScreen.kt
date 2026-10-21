@@ -107,7 +107,7 @@ fun HomeScreen(onLocationClick: () -> Unit = {},
 
                     IconButton(onClick = onProfileClick) {
                         Image(painter = painterResource(R.drawable.profile),
-                            contentDescription="",
+                            contentDescription = "Profile",
                             modifier = Modifier.size(40.dp))
                     }
                 }
@@ -140,7 +140,7 @@ fun HomeScreen(onLocationClick: () -> Unit = {},
                     )
                 },
                 leadingIcon = { Image(painter = painterResource(R.drawable.search),
-                    contentDescription =null,
+                    contentDescription = "Search rooms",
                     modifier = Modifier.size(22.dp))},
                 singleLine = true,
                 shape = RoundedCornerShape(50.dp),

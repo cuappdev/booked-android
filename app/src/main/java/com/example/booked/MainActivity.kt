@@ -9,6 +9,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
@@ -29,8 +30,8 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun App()
 {
-    var showSplash by remember { mutableStateOf(true) }
-    var showHome by remember { mutableStateOf(false)}
+    var showSplash by rememberSaveable { mutableStateOf(true) }
+    var showHome by rememberSaveable { mutableStateOf(false)}
     LaunchedEffect(Unit) {
         delay(2000)
         showSplash=false

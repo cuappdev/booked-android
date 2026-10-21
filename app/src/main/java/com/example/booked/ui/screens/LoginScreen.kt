@@ -56,7 +56,7 @@ fun LoginScreen(onSignInClick: () -> Unit)
             {
                 Icon(
                     painter = painterResource(R.drawable.login_key),
-                    contentDescription = null,
+                    contentDescription = "Sign in with NetID",
                     modifier = Modifier.size(20.dp)
                 )
                 Spacer(modifier=Modifier.width(12.dp))
