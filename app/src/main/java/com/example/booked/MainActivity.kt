@@ -3,61 +3,38 @@ package com.example.booked
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
-import com.example.booked.ui.screens.HomeScreen
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.booked.ui.screens.HomeRoute
 import com.example.booked.ui.screens.LoginScreen
-import com.example.booked.ui.theme.BookedTheme
 import com.example.booked.ui.screens.SplashScreen
-import kotlinx.coroutines.delay
+import com.example.booked.ui.viewmodels.AppUiState
+import com.example.booked.ui.viewmodels.AppViewModel
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            App()
+            AppRoute()
         }
     }
 }
-@Composable
-fun App()
-{
-    var showSplash by rememberSaveable { mutableStateOf(true) }
-    var showHome by rememberSaveable { mutableStateOf(false)}
-    LaunchedEffect(Unit) {
-        delay(2000)
-        showSplash=false
-    }
-    when
-    {
-        showSplash -> SplashScreen()
-        showHome -> HomeScreen()
-        else -> LoginScreen(onSignInClick= {showHome=true})
-    }
 
+@Composable
+fun AppRoute(appViewModel: AppViewModel = hiltViewModel()) {
+    val uiState by appViewModel.uiState.collectAsStateWithLifecycle()
+    App(uiState = uiState, onSignInClick = {appViewModel.onSignInClick() }, homeContent = { HomeRoute() })
 }
 
-
 @Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    BookedTheme {
-        Greeting("Android")
+fun App(uiState: AppUiState, onSignInClick: () -> Unit, homeContent: @Composable () -> Unit) {
+    when {
+        uiState.showSplash -> SplashScreen()
+        uiState.showHome -> homeContent()
+        else -> LoginScreen(onSignInClick = onSignInClick)
     }
 }

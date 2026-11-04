@@ -18,12 +18,8 @@ import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -35,46 +31,55 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.booked.RoomCard
-
+import com.example.booked.data.model.StudyRoom
+import com.example.booked.ui.viewmodels.HomeViewModel
+import com.example.booked.ui.viewmodels.HomeUiState
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.rememberModalBottomSheetState
 @Composable
-fun HomeScreen(onLocationClick: () -> Unit = {},
-               onProfileClick: () -> Unit = {})
-{
-    val sampleRooms = listOf(StudyRoom("4B02 Cocktail Lounge",
-        "Uris Library",
-        collaborative = true,
-        bookable = true,
-        availableNow = true,
-        image = R.drawable.uris), StudyRoom("4B03 Cocktail Lounge",
-        "Uris Library",
-        collaborative = true,
-        bookable = true,
-        availableNow = true,
-        image = R.drawable.uris),
-        StudyRoom("4B04 Cocktail Lounge",
-            "Uris Library",
-            collaborative = true,
-            bookable = true,
-            availableNow = true,
-            image = R.drawable.uris),
-        StudyRoom("4B05 Cocktail Lounge",
-            "Uris Library",
-            collaborative = true,
-            bookable = true,
-            availableNow = true,
-            image = R.drawable.uris))
+fun HomeRoute(
+    onLocationClick: () -> Unit = {},
+    onProfileClick: () -> Unit = {},
+    viewModel: HomeViewModel = hiltViewModel()
+) {
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    HomeScreen(
+        uiState = uiState,
+        onSearchChange = viewModel::onSearchChange,
+        onFiltersVisibilityChange = viewModel::onFiltersVisibilityChange,
+        onFilterSelectionChange = viewModel::onFilterSelectionChange,
+        onShowAllLibrariesChange = viewModel::onShowAllLibrariesChange,
+        onClearFilters = viewModel::onClearFilters,
+        onApplyFilters = viewModel::onApplyFilters,
+        onLocationClick = onLocationClick,
+        onProfileClick = onProfileClick
+    )
+}
 
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun HomeScreen(
+    uiState: HomeUiState,
+    onSearchChange: (String) -> Unit,
+    onFiltersVisibilityChange: (Boolean) -> Unit,
+    onFilterSelectionChange: (String) -> Unit,
+    onShowAllLibrariesChange: (Boolean) -> Unit,
+    onClearFilters: () -> Unit,
+    onApplyFilters: () -> Unit,
+    onLocationClick: () -> Unit = {},
+    onProfileClick: () -> Unit = {}
+) {
     val background = Color(0xFFFAF7F1)
     val green = Color(0xFF3F4F44)
-    var search by remember { mutableStateOf("") }
-    val visibleRooms = sampleRooms.filter { room ->
-        room.name.contains(search, ignoreCase = true) ||
-                room.library.contains(search, ignoreCase = true)
-    }
+    val filterSheetState = rememberModalBottomSheetState(
+        skipPartiallyExpanded = true
+    )
 
     Scaffold(
         containerColor = background,
@@ -128,31 +133,47 @@ fun HomeScreen(onLocationClick: () -> Unit = {},
                     .padding(top = 20.dp, bottom = 18.dp)
                     .size(32.dp)
             )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                OutlinedTextField(
+                    value = uiState.search,
+                    onValueChange = onSearchChange,
+                    placeholder = {
+                        Text(
+                            text = "Where to book?",
+                            color = Color(0xFFB8BDB7),
+                            fontSize = 16.sp
+                        )
+                    },
+                    leadingIcon = { Image(painter = painterResource(R.drawable.search),
+                        contentDescription = "Search rooms",
+                        modifier = Modifier.size(22.dp))},
+                    singleLine = true,
+                    shape = RoundedCornerShape(50.dp),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = green,
+                        unfocusedBorderColor = Color(0xFFE5E6DF),
+                        focusedTextColor = green,
+                        unfocusedTextColor = green,
+                        cursorColor = green
+                    ),
+                    modifier = Modifier.weight(1f)
+                )
 
-            OutlinedTextField(
-                value = search,
-                onValueChange = { search = it },
-                placeholder = {
-                    Text(
-                        text = "Where to book?",
-                        color = Color(0xFFB8BDB7),
-                        fontSize = 16.sp
+                IconButton(
+                    onClick = { onFiltersVisibilityChange(true) },
+                    modifier = Modifier.padding(start = 8.dp).size(48.dp)
+                ) {
+                    Image(
+                        painter = painterResource(R.drawable.filter),
+                        contentDescription = "Open filters",
+                        modifier = Modifier.size(24.dp)
                     )
-                },
-                leadingIcon = { Image(painter = painterResource(R.drawable.search),
-                    contentDescription = "Search rooms",
-                    modifier = Modifier.size(22.dp))},
-                singleLine = true,
-                shape = RoundedCornerShape(50.dp),
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = green,
-                    unfocusedBorderColor = Color(0xFFE5E6DF),
-                    focusedTextColor = green,
-                    unfocusedTextColor = green,
-                    cursorColor = green
-                ),
-                modifier = Modifier.fillMaxWidth()
-            )
+                }
+            }
+
 
             Spacer(Modifier.height(16.dp))
 
@@ -181,7 +202,7 @@ fun HomeScreen(onLocationClick: () -> Unit = {},
 
             Spacer(Modifier.height(16.dp))
 
-            if (visibleRooms.isEmpty()) {
+            if (uiState.visibleRooms.isEmpty()) {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -189,7 +210,7 @@ fun HomeScreen(onLocationClick: () -> Unit = {},
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = "No rooms match your search.",
+                        text = "No rooms match your search and filters.",
                         color = Color(0xFF686862)
                     )
                 }
@@ -204,7 +225,7 @@ fun HomeScreen(onLocationClick: () -> Unit = {},
                     contentPadding = PaddingValues(bottom = 20.dp)
                 ) {
                     items(
-                        items = visibleRooms,
+                        items = uiState.visibleRooms,
                         key = { it.name }
                     ) { room ->
                         RoomCard(
@@ -218,22 +239,45 @@ fun HomeScreen(onLocationClick: () -> Unit = {},
                 }
             }
         }
+        if (uiState.showFilters) {
+            ModalBottomSheet(
+                onDismissRequest = { onFiltersVisibilityChange(false) },
+                sheetState = filterSheetState,
+                containerColor = Color(0xFFFEFDFC)
+            ) {
+                RoomFiltersContent(
+                    uiState = uiState.filters,
+                    onSelectionChange = onFilterSelectionChange,
+                    onShowAllLibrariesChange = onShowAllLibrariesChange,
+                    onClear = onClearFilters,
+                    onApply = onApplyFilters
+                )
+            }
+        }
     }
 
 }
-
-data class StudyRoom(
-    val name: String,
-    val library: String,
-    val collaborative: Boolean,
-    val bookable: Boolean,
-    val availableNow: Boolean,
-    val image: Int
-)
 
 @Preview
 @Composable
 fun HomeScreenPreview()
 {
-    HomeScreen()
+    HomeScreen(
+        uiState = HomeUiState(visibleRooms = listOf(
+            StudyRoom(
+                name = "4B02 Cocktail Lounge",
+                library = "Uris Library",
+                collaborative = true,
+                bookable = true,
+                availableNow = true,
+                image = R.drawable.uris
+            )
+        )),
+        onSearchChange = {},
+        onFiltersVisibilityChange = {},
+        onFilterSelectionChange = {},
+        onShowAllLibrariesChange = {},
+        onClearFilters = {},
+        onApplyFilters = {}
+    )
 }
