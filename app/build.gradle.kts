@@ -1,9 +1,18 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.hilt)
     alias(libs.plugins.ksp)
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
 }
+
+val localConfig = Properties().apply {
+    val file = rootProject.file("local.properties")
+    if (file.exists()) file.inputStream().use { load(it) }
+}
+val mapsApiKey = providers.environmentVariable("MAPS_API_KEY")
+    .orElse(localConfig.getProperty("MAPS_API_KEY", "")).get().trim()
 
 android {
     namespace = "com.example.booked"
@@ -12,6 +21,8 @@ android {
     }
 
     defaultConfig {
+        manifestPlaceholders["MAPS_API_KEY"] = mapsApiKey
+        buildConfigField("boolean", "MAPS_CONFIGURED", mapsApiKey.isNotBlank().toString())
         applicationId = "com.example.booked"
         minSdk = 24
         targetSdk = 36
@@ -36,10 +47,12 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
 
 dependencies {
+    implementation("com.google.maps.android:maps-compose:6.12.0")
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)
     implementation(libs.androidx.hilt.viewmodel.compose)

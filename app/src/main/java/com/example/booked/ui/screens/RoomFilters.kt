@@ -15,7 +15,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
-private val FilterGreen = Color(0xFF3F4F44)
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 internal fun RoomFiltersContent(
@@ -33,10 +32,10 @@ internal fun RoomFiltersContent(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Text("Filters", fontSize = 22.sp, fontWeight = FontWeight.SemiBold,
-                color = FilterGreen)
+            Text("Filters", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.primary)
             TextButton(onClick = onClear, enabled = uiState.selectedFilters.isNotEmpty()) {
-                Text("Clear all", color = if (uiState.selectedFilters.isEmpty()) Color.Gray else FilterGreen)
+                Text("Clear all", color = if (uiState.selectedFilters.isEmpty()) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.primary)
             }
         }
 
@@ -47,7 +46,7 @@ internal fun RoomFiltersContent(
         ) {
             uiState.sections.forEach { section ->
                 Column {
-                    Text(section.title, color = Color(0xFF595C5A), fontSize = 16.sp,
+                    Text(section.title, color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodyLarge,
                         fontWeight = FontWeight.Medium)
                     Spacer(Modifier.height(8.dp))
                     FlowRow(
@@ -59,15 +58,15 @@ internal fun RoomFiltersContent(
                             FilterChip(
                                 selected = selected,
                                 onClick = { onSelectionChange(option.key) },
-                                label = { Text("${option.label} · ${option.count}", fontSize = 12.sp) },
+                                label = { Text("${option.label} · ${option.count}", style = MaterialTheme.typography.labelMedium) },
                                 shape = RoundedCornerShape(50),
-                                border = if (selected) BorderStroke(1.dp, FilterGreen)
+                                border = if (selected) BorderStroke(1.dp, MaterialTheme.colorScheme.primary)
                                     else BorderStroke(0.dp, Color.Transparent),
                                 colors = FilterChipDefaults.filterChipColors(
-                                    containerColor = Color(0xFFECEDE7),
-                                    labelColor = FilterGreen,
-                                    selectedContainerColor = Color(0xFFDDECE3),
-                                    selectedLabelColor = FilterGreen
+                                    containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                                    labelColor = MaterialTheme.colorScheme.primary,
+                                    selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                                    selectedLabelColor = MaterialTheme.colorScheme.primary
                                 )
                             )
                         }
@@ -77,24 +76,24 @@ internal fun RoomFiltersContent(
                             onClick = { onShowAllLibrariesChange(!uiState.showAllLibraries) },
                             contentPadding = PaddingValues(0.dp)
                         ) {
-                            Text(if (uiState.showAllLibraries) "See less" else "See more", color = FilterGreen)
+                            Text(if (uiState.showAllLibraries) "See less" else "See more", color = MaterialTheme.colorScheme.primary)
                         }
                     }
                 }
             }
         }
 
-        Surface(color = Color(0xFFFEFDFC), shadowElevation = 6.dp) {
+        Surface(color = MaterialTheme.colorScheme.surface, shadowElevation = 6.dp) {
             Button(
                 onClick = onApply,
                 modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 12.dp)
                     .heightIn(min = 52.dp),
                 shape = RoundedCornerShape(50),
-                colors = ButtonDefaults.buttonColors(containerColor = FilterGreen)
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
             ) {
                 Text(
                     if (uiState.resultCount == 1) "Show 1 room" else "Show ${uiState.resultCount} rooms",
-                    fontSize = 16.sp
+                    style = MaterialTheme.typography.bodyLarge
                 )
             }
         }

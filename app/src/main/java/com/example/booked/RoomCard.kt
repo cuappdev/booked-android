@@ -1,5 +1,7 @@
 package com.example.booked
 
+import com.example.booked.ui.theme.BookedTheme
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -22,21 +24,27 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 @Composable
-fun RoomCard(roomName: String, libraryName: String, collaborative: Boolean, bookable: Boolean, image: Int)
+fun RoomCard(roomName: String, libraryName: String, collaborative: Boolean, bookable: Boolean, image: Int, onClick: () -> Unit = {},
+    spaceLabel: String = "Individual Study",
+    noiseLabel: String = if (collaborative) "Collaborative" else "Silent",
+    reservationLabel: String = if (bookable) "Bookable" else "By request")
 {
     Card(
+        onClick = onClick,
         modifier = Modifier.width(248.87.dp),
         shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFFFEFDFC)),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation=4.dp)
     )
     {
@@ -52,12 +60,12 @@ fun RoomCard(roomName: String, libraryName: String, collaborative: Boolean, book
                 modifier=Modifier.align(Alignment.TopEnd)
                     .padding(15.dp)
                     .size(35.dp)
-                    .background(color=Color(0xFFFEFDFB), shape= CircleShape))
+                    .background(color=MaterialTheme.colorScheme.surface, shape= CircleShape))
             {
                 Icon(
                     painter = painterResource(R.drawable.heart),
                     contentDescription = "Favorite",
-                    tint=Color(0xFF595C5A),
+                    tint=MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier=Modifier.size(20.dp))
 
             }
@@ -67,29 +75,22 @@ fun RoomCard(roomName: String, libraryName: String, collaborative: Boolean, book
                 .padding(horizontal=16.dp, vertical=16.dp))
         {
             Text(text=roomName,
-                fontSize=18.sp,
-                color=Color(0xFF3F4F44),
+                style = MaterialTheme.typography.titleMedium,
+                color=MaterialTheme.colorScheme.primary,
                 maxLines=1,
                 overflow=TextOverflow.Ellipsis)
             Spacer(Modifier.height(5.dp))
 
-            Row {
-                Text(
-                    text = libraryName,
-                    fontSize = 14.sp,
-                    color = Color(0xFF686862)
-                )
-                Spacer(modifier=Modifier.width(4.dp))
-                Text(text="·",
-                    fontSize = 14.sp,
-                    color = Color(0xFF686862))
-                Spacer(modifier=Modifier.width(4.dp))
-                Text(
-                    text = if (bookable) "Bookable" else "By request",
-                    fontSize = 14.sp,
-                    color = if (bookable) Color(0xFF47B383) else Color(0xFF6B6A60)
-                )
-            }
+            Text(
+                text = buildAnnotatedString {
+                    append("$libraryName · ")
+                    withStyle(SpanStyle(color = if (bookable) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.onSurfaceVariant)) {
+                        append(reservationLabel)
+                    }
+                },
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
 
             Spacer(Modifier.height(5.dp))
 
@@ -98,17 +99,17 @@ fun RoomCard(roomName: String, libraryName: String, collaborative: Boolean, book
             ) {
                 Icon(
                     painter = painterResource(R.drawable.sofa),
-                    contentDescription = "Individual study",
-                    tint = Color.Gray,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.size(13.dp)
                 )
 
                 Spacer(Modifier.width(4.dp))
 
                 Text(
-                    text = "Individual Study",
-                    fontSize = 11.sp,
-                    color = Color.Gray
+                    text = spaceLabel,
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
 
@@ -119,17 +120,17 @@ fun RoomCard(roomName: String, libraryName: String, collaborative: Boolean, book
             ) {
                 Icon(
                     painter = painterResource(R.drawable.volume),
-                    contentDescription = if (collaborative) "Collaborative" else "Silent",
-                    tint = Color.Gray,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.size(13.dp)
                 )
 
                 Spacer(Modifier.width(4.dp))
 
                 Text(
-                    text = if (collaborative) "Collaborative" else "Silent",
-                    fontSize = 11.sp,
-                    color = Color.Gray
+                    text = noiseLabel,
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
         }
@@ -139,11 +140,13 @@ fun RoomCard(roomName: String, libraryName: String, collaborative: Boolean, book
 @Preview
 @Composable
 fun PreviewRoomCard() {
-    RoomCard(
-        roomName = "4B02 Cocktail",
-        libraryName = "Uris Library",
-        collaborative = true,
-        bookable = true,
-        image = R.drawable.uris
-    );
+    BookedTheme {
+        RoomCard(
+            roomName = "4B02 Cocktail",
+            libraryName = "Uris Library",
+            collaborative = true,
+            bookable = true,
+            image = R.drawable.uris
+        );
+    }
 }

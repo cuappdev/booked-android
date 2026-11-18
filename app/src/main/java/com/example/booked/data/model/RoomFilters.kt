@@ -1,19 +1,25 @@
 package com.example.booked.data.model
 
-internal val FilterGroups = listOf("Library", "Reservation", "Noise Level", "Space Type")
-
-internal fun StudyRoom.filterValue(group: String): String = when (group) {
-    "Library" -> library
-    "Reservation" -> reservation.label
-    "Noise Level" -> noise.label
-    "Space Type" -> spaceType.label
-    else -> error("Unknown filter group: $group")
+enum class FilterGroup(val label: String)
+{
+    LIBRARY("Library"),
+    RESERVATION("Reservation"),
+    NOISE_LEVEL("Noise Level"),
+    SPACE_TYPE("Space Type")
 }
 
-// Choices within a category are OR; different categories are AND.
+internal fun StudyRoom.filterValue(group: FilterGroup): String =
+    when (group) {
+    FilterGroup.LIBRARY -> library
+    FilterGroup.RESERVATION -> reservation.label
+    FilterGroup.NOISE_LEVEL -> noise.label
+    FilterGroup.SPACE_TYPE -> spaceType.label
+}
+
 internal fun StudyRoom.matchesFilters(selections: List<String>): Boolean =
-    FilterGroups.all { group ->
-        val choices = selections.filter { it.startsWith("$group:") }
-        choices.isEmpty() || "$group:${filterValue(group)}" in choices
+    FilterGroup.entries.all { group ->
+        val prefix = "${group.label}:"
+        val choices = selections.filter { it.startsWith(prefix) }
+        choices.isEmpty() || "$prefix${filterValue(group)}" in choices
     }
 

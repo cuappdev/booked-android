@@ -20,6 +20,8 @@ enum class SpaceType(val label: String) {
     CLASSROOM("Classroom"),
     SEMINAR("Seminar")
 }
+data class RoomLocation(val latitude: Double, val longitude: Double)
+
 data class StudyRoom(
     val name: String,
     val library: String,
@@ -31,6 +33,14 @@ data class StudyRoom(
         ReservationType.BOOKABLE else ReservationType.BY_REQUEST,
     val noise: NoiseLevel = if (collaborative)
         NoiseLevel.COLLABORATIVE else NoiseLevel.SILENT,
-    val spaceType: SpaceType = SpaceType.INDIVIDUAL_STUDY
+    val spaceType: SpaceType = SpaceType.INDIVIDUAL_STUDY,
+    val id: String = "$library:$name",
+    val description: String = "",
+    val openingNote: String? = null,
+    val foodNearby: Boolean = false,
+    val hasMonitor: Boolean = false,
+    val mapImage: Int? = null,
+    val bookingUrl: String? = null,
+    val location: RoomLocation? = null
 )
 

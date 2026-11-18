@@ -2,6 +2,7 @@ package com.example.booked.ui.viewmodels
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
+import com.example.booked.data.model.FilterGroup
 import com.example.booked.data.model.NoiseLevel
 import com.example.booked.data.model.ReservationType
 import com.example.booked.data.model.SpaceType
@@ -38,14 +39,22 @@ class HomeViewModel @Inject constructor(
     private val savedStateHandle: SavedStateHandle
 ) : ViewModel() {
     private val rooms = repository.getRooms()
+    enum class Library(val label: String)
+    {
+        MANN("Mann Library"),
+        OLIN("Olin Library"),
+        URIS("Uris Library"),
+        CATHERWOOD("Catherwood Library"),
+        ENGINEERING("Engineering Library")
+    }
     private val categories = linkedMapOf(
-        "Library" to (listOf("Mann Library", "Olin Library", "Uris Library", "Catherwood Library", "Engineering Library") + rooms.map { it.library }).distinct(),
-        "Reservation" to ReservationType.entries.map { it.label },
-        "Noise Level" to NoiseLevel.entries.map { it.label },
-        "Space Type" to SpaceType.entries.map { it.label }
+        FilterGroup.LIBRARY to (Library.entries.map { it.label} + rooms.map { it.library }).distinct(),
+        FilterGroup.RESERVATION to ReservationType.entries.map { it.label },
+        FilterGroup.NOISE_LEVEL to NoiseLevel.entries.map { it.label },
+        FilterGroup.SPACE_TYPE to SpaceType.entries.map { it.label }
     )
-    private val validKeys = categories.flatMap { (group, labels) -> labels.map { "$group:$it" } }.toSet()
-    private var search = savedStateHandle.get<String>("search").orEmpty()
+    private val validKeys = categories.flatMap { (group, labels) -> labels.map { "${group.label}:$it" } }.toSet()
+    private var searchQuery = savedStateHandle.get<String>("search").orEmpty()
     private var applied = restoredFilters("appliedFilters")
     private var showFilters = savedStateHandle["showFilters"] ?: false
     private var draft = if (showFilters) restoredFilters("draftFilters") else applied
@@ -54,7 +63,7 @@ class HomeViewModel @Inject constructor(
     val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
 
     fun onSearchChange(value: String) {
-        search = value
+        searchQuery = value
         publish()
     }
 
@@ -92,7 +101,7 @@ class HomeViewModel @Inject constructor(
         savedStateHandle.get<ArrayList<String>>(key).orEmpty().filter { it in validKeys }.distinct()
 
     private fun publish() {
-        savedStateHandle["search"] = search
+        savedStateHandle["search"] = searchQuery
         savedStateHandle["appliedFilters"] = ArrayList(applied)
         savedStateHandle["draftFilters"] = ArrayList(draft)
         savedStateHandle["showFilters"] = showFilters
@@ -102,18 +111,18 @@ class HomeViewModel @Inject constructor(
 
     private fun buildUiState(): HomeUiState {
         val matchingSearch = rooms.filter {
-            it.name.contains(search, ignoreCase = true) || it.library.contains(search, ignoreCase = true)
+            it.name.contains(searchQuery, ignoreCase = true) || it.library.contains(searchQuery, ignoreCase = true)
         }
         val sections = categories.map { (group, labels) ->
-            val otherSelections = draft.filterNot { it.startsWith("$group:") }
+            val otherSelections = draft.filterNot { it.startsWith("${group.label}:") }
             val countedRooms = matchingSearch.filter { it.matchesFilters(otherSelections) }
-            val visibleLabels = if (group == "Library" && !showAllLibraries) labels.take(5) else labels
-            FilterSection(group, visibleLabels.map { label ->
-                FilterOption("$group:$label", label, countedRooms.count { it.filterValue(group) == label })
+            val visibleLabels = if (group == FilterGroup.LIBRARY && !showAllLibraries) labels.take(5) else labels
+            FilterSection(group.label, visibleLabels.map { label ->
+                FilterOption("${group.label}:$label", label, countedRooms.count { it.filterValue(group) == label })
             })
         }
         return HomeUiState(
-            search = search,
+            search = searchQuery,
             visibleRooms = matchingSearch.filter { it.matchesFilters(applied) },
             appliedFilters = applied,
             showFilters = showFilters,
@@ -122,7 +131,7 @@ class HomeViewModel @Inject constructor(
                 selectedFilters = draft,
                 resultCount = matchingSearch.count { it.matchesFilters(draft) },
                 showAllLibraries = showAllLibraries,
-                canExpandLibraries = categories.getValue("Library").size > 5
+                canExpandLibraries = categories.getValue(FilterGroup.LIBRARY).size > 5
             )
         )
     }
